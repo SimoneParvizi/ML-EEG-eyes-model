@@ -1,14 +1,13 @@
-# To add a new cell, type '# %%'
-# %%
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from matplotlib import pyplot
 import pandas as pd 
 import numpy as np
-from pathlib import Path
-# %%
-dataaa = pd.read_csv("eyestateeegds.csv", header= None, names=["AF3","F7","F3","FC5","T7","P7","O1","O2","P8","T8","FC6","F4","F8","AF4","output"])
-# %%
+
+
+
+dataaa = pd.read_csv('C:/Users/simon/Desktop/progetto EEG/ML-EEG-eyes-model/eyestateeegds.csv', header= None, names=["AF3","F7","F3","FC5","T7","P7","O1","O2","P8","T8","FC6","F4","F8","AF4","output"])
+
 output = dataaa["output"].values
 dataaa = dataaa[(dataaa<5000)&(dataaa>3500)]
 dataaa["output"] = output
