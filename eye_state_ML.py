@@ -91,21 +91,21 @@ pyplot.grid(True)
 pyplot.show()
 
 #%% 8. walkingforward
-def walking_forward_val_5(TrnVal_set,test_set,datas_in_onefifth):
-    Y_datasVAL = []
+def walking_forward_val_5(TrnVal_set,Test_set,datas_in_onefifth):
+    #Y_datasVAL = []
     Y_datasTEST = []
     for times in range(1,5,1):
-        TrnVal_set = dataaa[:(times*datas_in_onefifth)]
+        #TrnVal_set = dataaa[:(times*datas_in_onefifth)]
         Test_set = dataaa[(times*datas_in_onefifth):((times+1)*datas_in_onefifth)]
-        for time in range(12,132,12):
-            accuracy_per_tenth_s = sliding_window(TrnVal_set,time,(times*datas_in_onefifth))
-            Y_datasVAL.append(accuracy_per_tenth_s)
+        #for time in range(12,132,12):
+        #    accuracy_per_tenth_s = sliding_window(TrnVal_set,time,(times*datas_in_onefifth))
+        #    Y_datasVAL.append(accuracy_per_tenth_s)
         for time in range(12,132,12):
             accuracy_per_tenth_s = sliding_window(Test_set,time,datas_in_onefifth)
             Y_datasTEST.append(accuracy_per_tenth_s)        
-    accuracy_T = np.mean(y_datasTEST)
-    accuracy_V =np.mean(y_datasVAL)
-    return accuracy_T,accuracy_V
+    accuracy_T = np.mean(Y_datasTEST)
+    #accuracy_V = np.mean(Y_datasVAL)
+    print(accuracy_T)
         
         
 #%% 9. testWF
@@ -119,7 +119,19 @@ for times in range(1,5,1):
     Test_set = dataaa[(times*x):((times+1)*x)]
     first_data = times*x
     print (Test_set, sep='\n')
-    
+    #%%
+Y_datasTEST = []
+for times in range(1,5,1):
+    Test_set = dataaa[(times*2995):((times+1)*2995)]
+    for time in range(12,132,12):
+        accuracy_per_tenth_s = sliding_window(Test_set,time,2995)
+        Y_datasTEST.append(accuracy_per_tenth_s)        
+accuracy_T = np.mean(Y_datasTEST)
+print(accuracy_T,sep='\n')
+#%%
+print(len(Y_datasTEST))
+print(*Y_datasTEST,sep='\n')
+
 
 
 
