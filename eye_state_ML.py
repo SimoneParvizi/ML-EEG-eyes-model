@@ -22,7 +22,7 @@ pyplot.show()
 #%%.2
 TrnValSet = dataaa[:13441]
 TestSet = dataaa[13441:]
-# %%.3
+# %%3. Sliding window
 def sliding_window(dtset,array_lenght,num_dati_nel_dtframe):
   model = RandomForestClassifier(n_estimators=45)
   array_start = 0
@@ -92,19 +92,17 @@ pyplot.show()
 
 #%% 8. walkingforward
 def walking_forward_val_5(TrnVal_set,test_set,datas_in_onefifth):
-    y_datasVAL = []
-    y_datasTEST = []
+    Y_datasVAL = []
+    Y_datasTEST = []
     for times in range(1,5,1):
-        first_data = 0
-        TrnVal_set = dataaa[:((times*datas_in_onefifth)+1)]
-        Test_set = dataaa[((times*datas_in_onefifth)+1):((times+1)*datas_in_onefifth)]
+        TrnVal_set = dataaa[:(times*datas_in_onefifth)]
+        Test_set = dataaa[(times*datas_in_onefifth):((times+1)*datas_in_onefifth)]
         for time in range(12,132,12):
-            accuracy_per_tenth_s = sliding_window(TrnValSet,time,(times*datas_in_onefifth))
-            y_datasVAL.append(accuracy_per_tenth_s)
+            accuracy_per_tenth_s = sliding_window(TrnVal_set,time,(times*datas_in_onefifth))
+            Y_datasVAL.append(accuracy_per_tenth_s)
         for time in range(12,132,12):
-            accuracy_per_tenth_s = sliding_window(TestSet,time,datas_in_onefifth)
-            y_datasTEST.append(accuracy_per_tenth_s)        
-        first_data = times*datas_in_onefifth
+            accuracy_per_tenth_s = sliding_window(Test_set,time,datas_in_onefifth)
+            Y_datasTEST.append(accuracy_per_tenth_s)        
     accuracy_T = np.mean(y_datasTEST)
     accuracy_V =np.mean(y_datasVAL)
     return accuracy_T,accuracy_V
@@ -112,3 +110,87 @@ def walking_forward_val_5(TrnVal_set,test_set,datas_in_onefifth):
         
 #%% 9. testWF
 walking_forward_val_5(TrnValSet,TestSet,2995)
+
+#%%
+for times in range(1,5,1):
+    x = 2995
+    first_data = 0
+    TrnVal_set = dataaa[:(times*x)]
+    Test_set = dataaa[(times*x):((times+1)*x)]
+    first_data = times*x
+    print (Test_set, sep='\n')
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
