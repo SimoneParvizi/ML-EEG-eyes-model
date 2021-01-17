@@ -5,24 +5,28 @@ import pandas as pd
 import numpy as np
 
 
-#%% pulizia dati
-dataaa = pd.read_csv('C:/Users/simon/Desktop/progetto EEG/ML-EEG-eyes-model/eyestateeegds.csv', header= None, names=["AF3","F7","F3","FC5","T7","P7","O1","O2","P8","T8","FC6","F4","F8","AF4","output"])
+#%% data cleaning
 
-output = dataaa["output"].values
-dataaa = dataaa[(dataaa<5000)&(dataaa>3500)]
-dataaa["output"] = output
-dataaa = dataaa.dropna()
-values = dataaa.values
-# %%. plot dei dati
+data = pd.read_csv('C:/Users/simon/Desktop/progetto EEG/ML-EEG-eyes-model/eyestateeegds.csv', header= None, names=["AF3","F7","F3","FC5","T7","P7","O1","O2","P8","T8","FC6","F4","F8","AF4","output"])
+
+output = data["output"].values
+data = data[(data<5000)&(data>3500)]
+data["output"] = output
+data = data.dropna()
+values = data.values
+# %%. data plot
+
 pyplot.figure(figsize=(20,10))
 for i in range(values.shape[1]):
 	pyplot.subplot(values.shape[1], 1, i+1)
 	pyplot.plot(values[:, i])
 pyplot.show()
-#%%.2
-TrnValSet = dataaa[:13441]
-TestSet = dataaa[13441:]
+#%%2. trn e test
+
+TrnValSet = data[:13441]
+TestSet = data[13441:]
 # %%3. Sliding window
+
 def sliding_window(dtset,array_lenght,num_dati_nel_dtframe):
   model = RandomForestClassifier(n_estimators=45)
   array_start = 0
@@ -45,31 +49,30 @@ def sliding_window(dtset,array_lenght,num_dati_nel_dtframe):
 #sliding_window(TrainValSet,12,13441)
 
 
-# %%.4
-#accuracy modello da 0.1s a 2s del Test Set
-y_datasTEST = []
-for time in range(12,252,12):
-  accuracy_per_tenth_s = sliding_window(TestSet,time,1536)
-  y_datasTEST.append(accuracy_per_tenth_s)
+# %% 4. model function for predicting from 0.1 to 1s
 
-print(*y_datasTEST, sep='\n')
+def range_secs(dtframe,dt_in_onetenth_s,dt_in_max_s,dt_in_dtframe):
+    y = []
+    for time in range(dt_in_onetenth_s,dt_in_max_s,dt_in_onetenth_s):
+      accuracy_per_tenth_s = sliding_window(dtframe,time,dt_in_dtframe)
+      y.append(accuracy_per_tenth_s)
+    return y
 
+# %% 5.test and val model accuracy from 0.1s to 2s 
 
-# %%
-#accuracy modello da 0.1s a 2s del Validation Set
-y_datasVAL = []
-for time in range(12,252,12):
-  accuracy_per_tenth_s = sliding_window(TrnValSet,time,13441)
-  y_datasVAL.append(accuracy_per_tenth_s)
+y_datasTEST = range_secs(TestSet,12,252,1536)
+y_datasVAL = range_secs(TrnValSet,12,252,13441) 
 
-print(*y_datasVAL, sep='\n')
+#%%
 
+print(y_datasTEST,sep='\n')
+print(y_datasVAL, sep='\n')
 
-# %%
-x_sec = np.arange(0.1,2,0.1)
+# %% 6. Test and Val plots
+x_sec = np.arange(0.1,2.1,0.1)
 pyplot.figure(figsize=(20,10))
 pyplot.plot(x_sec,y_datasTEST,'.-')
-pyplot.axis([0.08, 2, 0.4, 1])
+pyplot.axis([0.08, 2.1, 0.4, 1])
 pyplot.plot(x_sec,y_datasVAL,'.-')
 pyplot.ylabel('accuracy%')
 pyplot.xlabel('seconds')
@@ -95,8 +98,8 @@ def walking_forward_val_5(TrnVal_set,Test_set,datas_in_onefifth):
     #Y_datasVAL = []
     Y_datasTEST = []
     for times in range(1,5,1):
-        #TrnVal_set = dataaa[:(times*datas_in_onefifth)]
-        Test_set = dataaa[(times*datas_in_onefifth):((times+1)*datas_in_onefifth)]
+        #TrnVal_set = data[:(times*datas_in_onefifth)]
+        Test_set = data[(times*datas_in_onefifth):((times+1)*datas_in_onefifth)]
         #for time in range(12,132,12):
         #    accuracy_per_tenth_s = sliding_window(TrnVal_set,time,(times*datas_in_onefifth))
         #    Y_datasVAL.append(accuracy_per_tenth_s)
@@ -115,14 +118,14 @@ walking_forward_val_5(TrnValSet,TestSet,2995)
 for times in range(1,5,1):
     x = 2995
     first_data = 0
-    TrnVal_set = dataaa[:(times*x)]
-    Test_set = dataaa[(times*x):((times+1)*x)]
+    TrnVal_set = data[:(times*x)]
+    Test_set = data[(times*x):((times+1)*x)]
     first_data = times*x
     print (Test_set, sep='\n')
     #%%
 Y_datasTEST = []
 for times in range(1,5,1):
-    Test_set = dataaa[(times*2995):((times+1)*2995)]
+    Test_set = data[(times*2995):((times+1)*2995)]
     for time in range(12,132,12):
         accuracy_per_tenth_s = sliding_window(Test_set,time,2995)
         Y_datasTEST.append(accuracy_per_tenth_s)        
