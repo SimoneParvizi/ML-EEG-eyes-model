@@ -1,3 +1,4 @@
+#%%
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from matplotlib import pyplot
@@ -14,6 +15,8 @@ data = data[(data<5000)&(data>3500)]
 data["output"] = output
 data = data.dropna()
 values = data.values
+
+
 # %%. data plot
 
 pyplot.figure(figsize=(20,10))
@@ -21,11 +24,11 @@ for i in range(values.shape[1]):
 	pyplot.subplot(values.shape[1], 1, i+1)
 	pyplot.plot(values[:, i])
 pyplot.show()
-#%%2. trn e test
 
-TrnValSet = data[:13441]
-TestSet = data[13441:]
-# %%3. Sliding window
+
+# %%3. function that goes through the WHOLE dataframe making new x/ytrn e x/yval
+#      ALWAYS as long as "array_lenght"value
+
 
 def sliding_window(dtset,array_lenght,num_dati_nel_dtframe):
   model = RandomForestClassifier(n_estimators=45)
@@ -45,101 +48,80 @@ def sliding_window(dtset,array_lenght,num_dati_nel_dtframe):
   accuracy = np.mean(f1_tot)
   return accuracy
 
-#test:                                               
-#sliding_window(TrainValSet,12,13441)
 
+# %% if you put "return f1_tot" you can have an overlapping plot confirming that the 0% 
+#    accuracy points, match the exact moment of opening and 
 
-# %% 4. model function for predicting from 0.1 to 1s
+                                            
+f1_list = sliding_window(data,12,14976)
 
-def range_secs(dtframe,dt_in_onetenth_s,dt_in_max_s,dt_in_dtframe):
-    y = []
-    for time in range(dt_in_onetenth_s,dt_in_max_s,dt_in_onetenth_s):
-      accuracy_per_tenth_s = sliding_window(dtframe,time,dt_in_dtframe)
-      y.append(accuracy_per_tenth_s)
-    return y
+# %%
+print(len(f1_list))
 
-# %% 5.test and val model accuracy from 0.1s to 2s 
-
-y_datasTEST = range_secs(TestSet,12,252,1536)
-y_datasVAL = range_secs(TrnValSet,12,252,13441) 
-
-#%%
-
-print(y_datasTEST,sep='\n')
-print(y_datasVAL, sep='\n')
-
-# %% 6. Test and Val plots
-x_sec = np.arange(0.1,2.1,0.1)
+# %% 6. Overlapping plots
+f1_lst = np.array(f1_list)
+f1_masked = np.ma.masked_where(f1_lst == 1 ,f1_list)
+x_sec = np.arange(12,14976,12)
 pyplot.figure(figsize=(20,10))
-pyplot.plot(x_sec,y_datasTEST,'.-')
-pyplot.axis([0.08, 2.1, 0.4, 1])
-pyplot.plot(x_sec,y_datasVAL,'.-')
-pyplot.ylabel('accuracy%')
-pyplot.xlabel('seconds')
+pyplot.plot(x_sec,f1_masked,'.-',markersize=20, label="Predictions < 99%")
+data["output"].plot(label="Output")
+pyplot.legend(bbox_to_anchor=(1.02,1))
+pyplot.ylabel('Accuracy %')
+pyplot.xlabel('Number of Data')
 pyplot.grid(True)
 pyplot.show()
 
-y_datas = []
-x = sliding_window(TrnValSet,12,13441)
-y_datas.append(x)
 
-yyy = np.array(y_datas)
-x_sec = np.arange(0.1,112.1,0.1)
-pyplot.figure(figsize=(20,10))
-pyplot.plot(x_sec,yyy,'.-')
-pyplot.axis([-0.1, 113, -0.1, 1.1])
-pyplot.ylabel('accuracy%')
-pyplot.xlabel('seconds')
-pyplot.grid(True)
-pyplot.show()
+#%% 8. walkingforward (5 splits)
 
-#%% 8. walkingforward
-def walking_forward_val_5(TrnVal_set,Test_set,datas_in_onefifth):
-    #Y_datasVAL = []
+
+def walking_forward_5(dtset,datas_in_onefifth):
+    Y_datasVAL = []
     Y_datasTEST = []
-    for times in range(1,5,1):
-        #TrnVal_set = data[:(times*datas_in_onefifth)]
-        Test_set = data[(times*datas_in_onefifth):((times+1)*datas_in_onefifth)]
-        #for time in range(12,132,12):
-        #    accuracy_per_tenth_s = sliding_window(TrnVal_set,time,(times*datas_in_onefifth))
-        #    Y_datasVAL.append(accuracy_per_tenth_s)
-        for time in range(12,132,12):
+    for times in range(1,6,1): 
+        TrnVal_set = dtset[:(times*datas_in_onefifth)]
+        Test_set = dtset[(times*datas_in_onefifth):((times+1)*datas_in_onefifth)]
+        for time in range(12,132,12):          # loop that applies sliding window with values from 0.1 to 1s for TRN e VAL
+            accuracy_per_tenth_s = sliding_window(TrnVal_set,time,(times*datas_in_onefifth))
+            Y_datasVAL.append(accuracy_per_tenth_s)
+        for time in range(12,132,12):         # loop that applies sliding window with values from 0.1 to 1s for TEST
             accuracy_per_tenth_s = sliding_window(Test_set,time,datas_in_onefifth)
             Y_datasTEST.append(accuracy_per_tenth_s)        
     accuracy_T = np.mean(Y_datasTEST)
-    #accuracy_V = np.mean(Y_datasVAL)
-    print(accuracy_T)
+    accuracy_V = np.mean(Y_datasVAL)
+    return accuracy_V, accuracy_T
         
         
 #%% 9. testWF
-walking_forward_val_5(TrnValSet,TestSet,2995)
+
+final_accuracy = walking_forward_5(data,2995)
+print(len(final_accuracy))
 
 #%%
-for times in range(1,5,1):
-    x = 2995
-    first_data = 0
-    TrnVal_set = data[:(times*x)]
-    Test_set = data[(times*x):((times+1)*x)]
-    first_data = times*x
-    print (Test_set, sep='\n')
-    #%%
 Y_datasTEST = []
-for times in range(1,5,1):
+for times in range(1,6,1):
     Test_set = data[(times*2995):((times+1)*2995)]
     for time in range(12,132,12):
         accuracy_per_tenth_s = sliding_window(Test_set,time,2995)
-        Y_datasTEST.append(accuracy_per_tenth_s)        
-accuracy_T = np.mean(Y_datasTEST)
-print(accuracy_T,sep='\n')
-#%%
-print(len(Y_datasTEST))
-print(*Y_datasTEST,sep='\n')
-
-
-
-
-
-
+        Y_datasTEST.append(accuracy_per_tenth_s)  
+        
+# accuracy_T = np.mean(Y_datasTEST)
+# print(len(Y_datasTEST))
+# print(*Y_datasTEST,sep='\n')
+# print(np.mean(Y_datasTEST)) 
+# %% Final plot with all different splits
+x_sec = np.arange(0.1,1.1,0.1)
+pyplot.figure(figsize=(20,10))
+pyplot.plot(x_sec,Y_datasTEST[:10],'.-',label="First split")  
+pyplot.plot(x_sec,Y_datasTEST[10:20],'.-',label="Second split") 
+pyplot.plot(x_sec,Y_datasTEST[20:30],'.-',label="Third split") 
+pyplot.plot(x_sec,Y_datasTEST[30:40],'.-',label="Fourth split") 
+pyplot.axis([0.08, 1.1, 0.4, 1])
+pyplot.legend(loc="lower right")
+pyplot.ylabel('Accuracy %')
+pyplot.xlabel('Time window analyzed')
+pyplot.grid(True)
+pyplot.show()
 
 
 
