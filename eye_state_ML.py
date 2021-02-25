@@ -107,6 +107,7 @@ for times in range(1,5,1):
 accuracy_T = np.mean(Y_datasTEST)
 print(len(Y_datasTEST))
 print(*Y_datasTEST,sep='\n')
+# %%
 print(np.mean(Y_datasTEST)) 
 # %% Final plot with all different splits
 x_sec = np.arange(0.1,1.1,0.1)
